@@ -3,7 +3,7 @@ import argparse
 import sys
 from src.ast_handler import CodeQualityVisitor
 from src.generators import GeneratorFactory, IDocStringGenerator
-from src.utils import get_python_files
+from src.utils import get_python_files, get_get_changed_files
 
 def process_file(filepath: str, in_place: bool, strategy: str, overwrite_existing: bool, style: str):
     """
@@ -61,7 +61,9 @@ def main():
     parser = argparse.ArgumentParser(
         description="Analyzes and automatically documents Python files in a directory."
     )
-    parser.add_argument("path", help="The path to the Python file or directory to process.")
+    parser.add_argument("path", nargs='?', help="The path to process (file or directory). Defaults to current directory.")
+    # , default='.' TODO: keep this default in production
+    parser.add_argument("--diff", action="store_true", help="Only process files with changes based on git.")
     parser.add_argument("--strategy", choices=["mock", "groq"], default="mock")
     parser.add_argument("--style", choices=["google", "numpy", "rst"], default="google")
     parser.add_argument("--in-place", action="store_true")
