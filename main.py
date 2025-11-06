@@ -4,6 +4,7 @@ import sys
 from src.ast_handler import CodeQualityVisitor
 from src.generators import GeneratorFactory, IDocStringGenerator
 from src.utils import get_python_files, get_get_changed_files
+from src.config import load_config
 
 def process_file(filepath: str, in_place: bool, strategy: str, overwrite_existing: bool, style: str):
     """
@@ -52,18 +53,23 @@ def process_file(filepath: str, in_place: bool, strategy: str, overwrite_existin
         print("No modifications made.")
 
 
-
 def main():
     """Main entry point for the AutoDoc CLI."""
+
+    config = load_config()
+
     parser = argparse.ArgumentParser(
-        description="Analyzes and automatically documents Python files."
+        description="Analyzes and automatically documents Python files.",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
-    parser.add_argument("path", nargs='?', default='.', help="The path to process (file or directory). Defaults to current directory.")
-    parser.add_argument("--diff", action="store_true", help="Only process files with changes based on git.")
-    parser.add_argument("--strategy", choices=["mock", "groq"], default="mock")
-    parser.add_argument("--style", choices=["google", "numpy", "rst"], default="google")
-    parser.add_argument("--in-place", action="store_true")
-    parser.add_argument("--overwrite-existing", action="store_true")
+    parser.add_argument("path", nargs='?', default='.', help="Path to process (file or directory).")
+    parser.add_argument("--diff", action="store_true", help="Only process files with git changes.")
+    parser.add_argument("--strategy", choices=["mock", "groq"], default=config['strategy'], help="Docstring generation strategy.")
+    parser.add_argument("--style", choices=["google", "numpy", "rst"], default=config['style'], help="Docstring style to enforce.")
+    parser.add_argument("--in-place", action="store_true", help="Modify files in place.")
+    # For boolean flags, we check if the key is in config
+    overwrite_default = config.get('overwrite_existing', False)
+    parser.add_argument("--overwrite-existing", action="store_true", default=overwrite_default, help="Regenerate poor-quality docstrings.")
     
     args = parser.parse_args()
 
@@ -71,7 +77,7 @@ def main():
         print("Processing files with git changes...")
         python_files = get_get_changed_files()
         if python_files is None:
-            sys.exit(1) # Exit if there was a git error
+            sys.exit(1)
     else:
         python_files = get_python_files(args.path)
     
