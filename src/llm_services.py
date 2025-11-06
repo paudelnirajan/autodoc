@@ -103,16 +103,36 @@ class GroqAdapter(ILLMService):
             print(f"Error during docstring evaluation: {e}")
             return True
 
+    def evaluate_name(self, code_context: str, name: str) -> bool:
+        prompt = f"""
+        Analyze the Python code and the name `{name}`. Is this name high-quality and descriptive?
+
+        **Be very conservative.** Only answer NO if the name is clearly poor.
+        - **GOOD names** are descriptive and conventional (e.g., `user_profile`, `calculate_interest`, `first_number`, `item_count`, `MyCoolClass`). Do NOT flag these. These are YES.
+        - **BAD names** are too short (e.g., 'x', 'd'), too generic (e.g., 'data', 'temp'), or misleading. These are NO.
+
+        Code:
+        {code_context}        
+        Is `{name}` a high-quality name in this context? Answer with a single word: YES or NO.
+        """
+        try:
+            response = self.create_completion(prompt)
+            return "yes" in response.lower().strip()
+        except Exception as e:
+            print(f"Error during name evaluation: {e}")
+            return True 
+
     
     def suggest_name(self, code_context: str, old_name: str) -> str | None:
         prompt = f"""
-        Analyze the following Python code. The variable `{old_name}` has a poor name. Suggest a better, more descriptive variable name based on the usage in the code.
+        Analyze the following Python code. The variable `{old_name}` has been flagged for a potential naming issue.
+        Suggest a better, more descriptive variable name based on its usage.
 
         Code:
-
-        {code_context}
-
-        A good name should be descriptive, follow standard Python naming convention (snake_case), and not be a reserved keyword.
+        {code_context}        
+        A good name is descriptive and follows Python's snake_case convention.
+        
+        **IMPORTANT: If you believe the original name `{old_name}` is already a good and descriptive name, then simply return the original name itself.**
 
         Return only the new variable name, and nothing else.
         """
@@ -128,13 +148,15 @@ class GroqAdapter(ILLMService):
 
     def suggest_function_name(self, code_context: str, old_name: str) -> str | None:
         prompt = f"""
-        Analyze the following Python function/method. The name `{old_name}` is poor.
+        Analyze the following Python function/method. The name `{old_name}` has been flagged for a potential naming issue.
         Suggest a better, more descriptive name that follows Python's snake_case convention.
 
         Code:
+        {code_context}        
         
-        {code_context}
-                Return only the new function name, and nothing else.
+        **IMPORTANT: If you believe the original name `{old_name}` is already a good and descriptive name, then simply return the original name itself.**
+
+        Return only the new function name, and nothing else.
         """
         try:
             response = self.create_completion(prompt).strip()
@@ -145,21 +167,24 @@ class GroqAdapter(ILLMService):
             print(f"Error suggesting function name: {e}")
             return None
 
-    def evaluate_name(self, code_context: str, name: str) -> bool:
+    def suggest_class_name(self, code_context: str, old_name: str) -> str | None:
         prompt = f"""
-        Analyze the following Python code and the name `{name}`.
-        Is the name a high-quality, descriptive, and contextually appropriate name for the variable, function, or class?
-        A good name is clear, concise, and follows standard Python conventions (e.g., snake_case for variables/functions).
-        A bad name is too short (like 'x' or 'd'), generic (like 'data' or 'temp'), or doesn't match what the code is doing.
+        Analyze the following Python class. The name `{old_name}` has been flagged for a potential naming issue.
+        Suggest a better, more descriptive name that follows Python's PascalCase convention.
 
         Code:
+        {code_context}        
         
-        {code_context}
-                Answer with a single word: YES or NO.
+        **IMPORTANT: If you believe the original name `{old_name}` is already a good and descriptive name, then simply return the original name itself.**
+
+        Return only the new class name, and nothing else.
         """
         try:
-            response = self.create_completion(prompt)
-            return "yes" in response.lower().strip()
+            response = self.create_completion(prompt).strip()
+            if response and response.isidentifier():
+                return response
+            return None
         except Exception as e:
-            print(f"Error during name evaluation: {e}")
-            return True 
+            print(f"Error suggesting class name: {e}")
+            return None
+

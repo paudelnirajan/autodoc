@@ -3,7 +3,7 @@ import os
 import pathspec
 import git
 
-def get_get_changed_files() -> list[str] | None:
+def get_git_changed_files() -> list[str] | None:
     """
     Finds all the changed Python files in the current git repository.
     Compares against the last commit. Includes staged, unstaged, and untracked files.

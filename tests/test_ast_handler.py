@@ -1,9 +1,9 @@
 import ast
 import pytest
 from src.ast_handler import CodeQualityVisitor
-from src.generators import IDocStringGenerator
+from src.generators import IDocstringGenerator
 
-class ConfigurableMockGenerator(IDocStringGenerator):
+class ConfigurableMockGenerator(IDocstringGenerator):
     """
     A mock generator for testing that allows us to configure
     its evaluation response.

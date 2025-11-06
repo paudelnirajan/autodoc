@@ -4,7 +4,7 @@ import os
 from dotenv import load_dotenv
 from src.llm_services import ILLMService, GroqAdapter
 
-class IDocStringGenerator(abc.ABC):
+class IDocstringGenerator(abc.ABC):
     """
     An interface for different docstring generation and evaluation  strategies.
     """
@@ -44,8 +44,13 @@ class IDocStringGenerator(abc.ABC):
         """Evaluates if a name is of high quality for a given AST node."""
         pass
 
+    @abc.abstractmethod
+    def suggest_class_name(self, node: ast.ClassDef, old_name: str) -> str | None:
+        """Suggests a better name for a class."""
+        pass
 
-class MockGenerator(IDocStringGenerator):
+
+class MockGenerator(IDocstringGenerator):
     """
     A mock generator that returns a placeholder docstring.
     This is used for testing the AST modification pipeline without making the real API calls.
@@ -65,8 +70,10 @@ class MockGenerator(IDocStringGenerator):
     def evaluate_name(self, node: ast.AST, name: str) -> bool:
         return len(name) > 3
 
+    def suggest_class_name(self, node: ast.ClassDef, old_name: str) -> str | None:
+        return f"MockClassNameFor{old_name}"
 
-class LLMGenerator(IDocStringGenerator):
+class LLMGenerator(IDocstringGenerator):
     """
     A generator that uses an LLM service (via ILLMService adapter) to create and evaluate docstrings.
     """
@@ -99,6 +106,10 @@ class LLMGenerator(IDocStringGenerator):
         code_snippet = ast.unparse(node)
         return self.llm_service.evaluate_docstring(code_snippet, docstring)
 
+    def evaluate_name(self, node: ast.AST, name: str) -> bool:
+        code_context = ast.unparse(node)
+        return self.llm_service.evaluate_name(code_context, name)
+        
     def suggest_variable_name(self, node: ast.FunctionDef, old_name: str) -> str | None:
         code_context = ast.unparse(node)
         return self.llm_service.suggest_name(code_context, old_name)
@@ -107,17 +118,16 @@ class LLMGenerator(IDocStringGenerator):
         code_context = ast.unparse(node)
         return self.llm_service.suggest_function_name(code_context, old_name)
 
-    def evaluate_name(self, node: ast.AST, name: str) -> bool:
+    def suggest_class_name(self, node: ast.ClassDef, old_name: str) -> str | None:
         code_context = ast.unparse(node)
-        return self.llm_service.evaluate_name(code_context, name)
-
+        return self.llm_service.suggest_class_name(code_context, old_name)
 
 class GeneratorFactory:
     """
     A factory to create the appropriate docstring generator based on a strategy name.
     """
     @staticmethod
-    def create_generator(strategy: str, style: str = "google") -> IDocStringGenerator:
+    def create_generator(strategy: str, style: str = "google") -> IDocstringGenerator:
         if strategy == "mock":
             return MockGenerator()
         
