@@ -2,10 +2,10 @@ import ast
 import argparse
 import sys
 import subprocess
-from src.ast_handler import CodeQualityVisitor
-from src.generators import GeneratorFactory, IDocstringGenerator
-from src.utils import get_python_files, get_git_changed_files
-from src.config import load_config
+from .ast_handler import CodeQualityVisitor
+from .generators import GeneratorFactory, IDocstringGenerator
+from .utils import get_python_files, get_git_changed_files
+from .config import load_config
 
 def process_file(filepath: str, in_place: bool, strategy: str, overwrite_existing: bool, style: str, refactor: bool):
     """Processes a single Python file for documentation and formatting."""
