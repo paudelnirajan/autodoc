@@ -1,66 +1,101 @@
-# AutoDoc: AI-Powered Code Documentation Generator
+# AutoDoc AI
 
-## Project Overview
+[![PyPI version](https://badge.fury.io/py/autodoc-ai-paudelnirajan.svg)](https://badge.fury.io/py/autodoc-ai-paudelnirajan)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-**AutoDoc** is a command-line utility designed to help developers maintain high-quality documentation in their Python projects. It automatically analyzes existing source code, identifies undocumented functions and classes, and uses a Large Language Model (LLM) to generate or validate necessary docstrings.
+**AutoDoc AI** is a smart command-line developer tool that automates the tedious parts of maintaining high-quality Python code. It leverages Large Language Models (LLMs) to automatically generate docstrings, suggest intelligent refactorings, and integrate seamlessly into a modern development workflow.
 
-This tool ensures code completeness, reduces documentation debt, and allows developers to focus on writing code, not comments.
+This project was built on a foundation of solid Object-Oriented Programming principles and design patterns, including the Visitor, Strategy, Factory, and Adapter patterns.
 
-## Features
+---
 
-  * **Intelligent Docstring Insertion:** Scans Python files, finds missing docstrings for functions and classes, and injects high-quality, generated documentation directly into the Abstract Syntax Tree (AST).
-  * **Docstring Evaluation:** Uses a well-crafted LLM prompt to evaluate existing docstrings. If a docstring is found to be low-quality (e.g., a "TODO" placeholder or too generic), the tool can flag it or automatically replace it with a superior generated version.
-  * **Pluggable AI Backend:** The architecture is designed to easily swap between different LLM providers (e.g., Groq, OpenAI) or even run in a placeholder **Mock** mode for rapid local testing.
-  * **Non-Destructive AST Modification:** Safely modifies the code structure at the tree level, ensuring the resulting code is syntactically correct and properly formatted.
+## Core Features
 
-## Technology Stack
+*   **AI-Powered Docstring Generation:** Automatically create high-quality, context-aware docstrings for any function or class that's missing them.
+*   **Intelligent Docstring Correction:** Uses AI to evaluate existing docstrings and replaces poor-quality or placeholder documentation with new, improved versions.
+*   **AI-Powered Refactoring:**
+    *   **Safe Variable Renaming:** Automatically renames poorly named local variables within function scope.
+    *   **Intelligent Naming Suggestions:** Acts as an AI-powered linter, suggesting better names for classes and functions that are too short or non-descriptive.
+*   **Seamless Git Integration:** Use the `--diff` flag to only process files that have been changed in your current Git branch, making it incredibly fast and efficient for pre-commit hooks and CI pipelines.
+*   **Codebase-Wide Scanning:** Run `autodoc` on a single file or an entire directory. It automatically finds all Python files and respects your `.gitignore` to avoid processing virtual environments or build artifacts.
+*   **Automatic Formatting:** Integrates with the `black` code formatter to ensure that all generated and refactored code is perfectly styled.
+*   **Highly Configurable:** Set project-wide defaults for style, AI provider, and behavior in your `pyproject.toml` file.
 
-| Component | Technology | Role |
-| :--- | :--- | :--- |
-| **Language** | **Python 3.9+** | Core development language. |
-| **AST Parsing** | **`ast`** (Built-in) | Used for reading source code into an Abstract Syntax Tree. |
-| **Code Rewrite** | **`ast.unparse`** / `astor` (Optional) | Converts the modified AST back into source code. |
-| **AI Backend** | **Groq SDK** | Primary LLM provider for fast, real-time generation and evaluation. |
-| **Dependency Management**| **`dotenv`** | Manages API keys and configuration settings. |
+## Installation
 
-## Getting Started
-
-### Prerequisites
-
-1.  Python 3.9 or higher.
-2.  A Groq API key (or equivalent for a different LLM service).
-
-### Installation
-
-1.  Clone the repository:
-    ```bash
-    git clone https://github.com/paudelnirajan/autodoc
-    cd autodoc
-    ```
-2.  Set up a virtual environment and install dependencies:
-    ```bash
-    python3 -m venv venv
-    source venv/bin/activate
-    pip install -r requirements.txt
-    ```
-3.  Create a file named `.env` in the project root and add your API key:
-    ```
-    # .env
-    GROQ_API_KEY="sk-..."
-    GROQ_MODEL_NAME="llama-3.3-70b-versatile" # Optional, defaults to this model
-    ```
-
-### Usage
-
-Run the tool from the command line, specifying the file you wish to document and the strategy to use:
+You can install AutoDoc AI directly from PyPI:
 
 ```bash
-# Preview changes (dry run) using the LLM strategy
-python3 main.py --file=path/to/my_script.py --strategy=groq
-
-# Apply changes to the file using the LLM strategy
-python3 main.py --file=path/to/my_script.py --strategy=groq --write
-
-# Run in mock mode to test the AST modification without API calls
-python3 main.py --file=path/to/my_script.py --strategy=mock --write
+pip install autodoc-ai-paudelnirajan
 ```
+
+## Configuration
+
+### 1. Set Up Your AI Provider
+
+AutoDoc requires an API key from an LLM provider. This project is configured to use Groq.
+
+1.  Create a `.env` file in the root of your project.
+2.  Add your Groq API key and desired model to the file:
+
+    ```env
+    GROQ_API_KEY="gsk_YourActualGroqApiKeyHere"
+    GROQ_MODEL_NAME="llama3-8b-8192"
+    ```
+
+### 2. Configure Project Defaults (Optional)
+
+You can set default behaviors for your project in your `pyproject.toml` file. AutoDoc will use these settings unless they are overridden by a command-line flag.
+
+```toml
+# In your pyproject.toml
+
+[tool.autodoc]
+# Settings for your AutoDoc tool
+strategy = "groq"
+style = "google"           # 'google', 'numpy', or 'rst'
+overwrite_existing = true  # Regenerate poor-quality docstrings
+refactor = true            # Enable AI-powered refactoring
+```
+
+## Usage
+
+AutoDoc is a flexible command-line tool.
+
+**Get help:**
+```bash
+autodoc --help
+```
+
+**Run on a specific file (dry run, prints to console):**
+```bash
+autodoc path/to/your/file.py
+```
+
+**Run on an entire directory and save changes in-place:**
+```bash
+autodoc src/ --in-place
+```
+
+**Run in "Git mode" to only process changed files (most common use case):**
+```bash
+autodoc --diff --in-place
+```
+
+**Enable all AI features to perform a full quality pass:**
+```bash
+autodoc . --in-place --overwrite-existing --refactor
+```
+
+## How It Works
+
+AutoDoc uses a "Surgical Hybrid" architecture that combines the strengths of traditional and modern tooling:
+
+1.  **Fast Local Analysis:** It uses Python's `ast` (Abstract Syntax Tree) module to rapidly parse code and identify potential issues (like a missing docstring or a short variable name). This is done locally and is extremely fast.
+2.  **Targeted AI Intelligence:** Only when a potential issue is found does it send the small, relevant code snippet to an LLM for intelligent analysis (e.g., "Is this a good name?" or "Generate a docstring for this function").
+3.  **Precise Code Modification:** The AI's response is used to perform a safe and precise modification of the AST, which is then unparsed back into valid Python code.
+4.  **Toolchain Integration:** Finally, it uses `black` to ensure the final code is perfectly formatted, integrating seamlessly into the existing Python ecosystem.
+
+## License
+
+This project is licensed under the MIT License.
