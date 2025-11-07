@@ -1,6 +1,13 @@
 import os
-import tomli
 from typing import Any, Dict
+
+# This block makes the code compatible with Python < 3.11 and >= 3.11
+try:
+    # For Python 3.11+
+    import tomllib
+except ImportError:
+    # For older Python versions, use the tomli library as a fallback
+    import tomli as tomllib
 
 def find_pyproject_toml(start_dir: str) -> str | None:
     """
@@ -11,7 +18,7 @@ def find_pyproject_toml(start_dir: str) -> str | None:
         toml_path = os.path.join(current_dir, "pyproject.toml")
         if os.path.exists(toml_path):
             return toml_path
-
+        
         parent_dir = os.path.dirname(current_dir)
         if parent_dir == current_dir:
             return None
@@ -20,23 +27,24 @@ def find_pyproject_toml(start_dir: str) -> str | None:
 def load_config() -> Dict[str, Any]:
     """
     Loads configuration from the [tool.autodoc] section of pyproject.toml.
-    Returns a dictionary with default values if the file or section is not found.
     """
     default_config = {
         "strategy": "mock",
         "style": "google",
         "overwrite_existing": False,
+        "refactor": False
     }
 
     toml_path = find_pyproject_toml(os.getcwd())
     if not toml_path:
         return default_config
-    
+
     try:
-        with open(toml_path, 'rb') as f:
-            full_config = tomli.load(f)
+        with open(toml_path, "rb") as f:
+            # We use `tomllib` which is now an alias for either library
+            full_config = tomllib.load(f)
             autodoc_config = full_config.get("tool", {}).get("autodoc", {})
             return {**default_config, **autodoc_config}
-    except (tomli.TOMLDecodeError, IOError) as e:
+    except (tomllib.TOMLDecodeError, IOError) as e:
         print(f"Warning: Could not read or parse pyproject.toml: {e}")
         return default_config
