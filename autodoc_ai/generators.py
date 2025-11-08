@@ -4,6 +4,7 @@ import os
 import sys
 from dotenv import load_dotenv
 from .llm_services import ILLMService, GroqAdapter
+from pathlib import Path
 
 class IDocstringGenerator(abc.ABC):
     """
@@ -133,7 +134,8 @@ class GeneratorFactory:
             return MockGenerator()
         
         if strategy == "groq":
-            load_dotenv()
+            dotenv_path = Path(os.getcwd()) / '.env'
+            load_dotenv(dotenv_path=dotenv_path)
             api_key = os.getenv("GROQ_API_KEY")
             if not api_key:
                 print(
