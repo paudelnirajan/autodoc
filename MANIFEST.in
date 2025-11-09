@@ -1,0 +1,7 @@
+include README.md
+include LICENSE
+include requirements.txt
+recursive-include autodoc_ai *.py
+recursive-include examples *.py *.js *.java *.cpp *.go
+global-exclude __pycache__
+global-exclude *.py[co]
