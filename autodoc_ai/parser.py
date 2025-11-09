@@ -44,6 +44,14 @@ def get_language_queries(language_name: str) -> dict:
                 ) @func
                 """
             ),
+            "functions_with_type_hints": Query(
+                language,
+                """
+                (function_definition
+                  return_type: (_)
+                ) @func
+                """
+            ),
         }
     if language_name == 'javascript':
         return {
