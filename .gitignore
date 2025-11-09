@@ -222,5 +222,5 @@ build/
 # Local development
 local/
 development/
-.debug_env
-.debug.py
+debug_env.py
+.debug

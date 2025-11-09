@@ -4,7 +4,7 @@ import os
 from textwrap import indent
 import traceback
 from textwrap import indent
-from tree_sitter import QueryCursor
+from tree_sitter import Language, Query
 from .generators import GeneratorFactory, IDocstringGenerator
 from .utils import get_source_files, get_git_changed_files
 from .config import load_config
