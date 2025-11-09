@@ -126,6 +126,30 @@ Zenco uses a "Tree-sitter + AI" architecture for fast, accurate multi-language s
 4.  **Safe Transformation:** Applies changes using precise byte-level edits with the CodeTransformer
 5.  **Multi-Provider Support:** Works with Groq, OpenAI, Anthropic, and Google Gemini APIs
 
+## 🤝 Contributors
+
+We thank all the people who contribute to Zenco! Your contributions make this project better.
+
+<a href="https://github.com/paudelnirajan/zenco/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=paudelnirajan/zenco" />
+</a>
+
+### 🎉 How to Contribute
+
+- 🐛 **Report bugs** - [Open an issue](https://github.com/paudelnirajan/zenco/issues)
+- ✨ **Request features** - [Start a discussion](https://github.com/paudelnirajan/zenco/discussions)  
+- 🔧 **Submit PRs** - [Check CONTRIBUTING.md](https://github.com/paudelnirajan/zenco/blob/main/CONTRIBUTING.md)
+- 📝 **Improve docs** - Help us make documentation better
+
+### 🏆 Notable Contributions
+
+- **Initial Development**: [@paudelnirajan](https://github.com/paudelnirajan) - Core architecture, multi-language support
+- *Future contributors will be listed here as they join the project!*
+
+---
+
+Made with ❤️ by the Zenco community
+
 ## License
 
 This project is licensed under the MIT License.
