@@ -52,6 +52,15 @@ def get_language_queries(language_name: str) -> dict:
                 ) @func
                 """
             ),
+            "numeric_literals": Query(
+                language,
+                """
+                [
+                  (integer) @number
+                  (float) @number
+                ]
+                """
+            ),
         }
     if language_name == 'javascript':
         return {
@@ -68,6 +77,12 @@ def get_language_queries(language_name: str) -> dict:
                   (function_declaration) @func
                 )
                 (#match? @docstring "^/\\\\*\\\\*")
+                """
+            ),
+            "numeric_literals": Query(
+                language,
+                """
+                (number) @number
                 """
             ),
         }
@@ -88,6 +103,18 @@ def get_language_queries(language_name: str) -> dict:
                 )
                 """
             ),
+            "numeric_literals": Query(
+                language,
+                """
+                [
+                  (decimal_integer_literal) @number
+                  (decimal_floating_point_literal) @number
+                  (hex_integer_literal) @number
+                  (octal_integer_literal) @number
+                  (binary_integer_literal) @number
+                ]
+                """
+            ),
         }
 
     if language_name == 'go':
@@ -106,6 +133,15 @@ def get_language_queries(language_name: str) -> dict:
                 )
                 """
             ),
+            "numeric_literals": Query(
+                language,
+                """
+                [
+                  (int_lit) @number
+                  (float_lit) @number
+                ]
+                """
+            ),
         }
 
     if language_name == 'cpp':
@@ -122,6 +158,12 @@ def get_language_queries(language_name: str) -> dict:
                   .
                   (function_definition) @func
                 )
+                """
+            ),
+            "numeric_literals": Query(
+                language,
+                """
+                (number_literal) @number
                 """
             ),
         }

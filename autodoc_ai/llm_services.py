@@ -50,6 +50,14 @@ class ILLMService(abc.ABC):
         """
         pass
 
+    @abc.abstractmethod
+    def suggest_constant_name(self, code_context: str, magic_number: str) -> str | None:
+        """
+        Suggests a descriptive constant name for a magic number.
+        Returns the suggested constant name in UPPER_SNAKE_CASE or None.
+        """
+        pass
+
 # --- Implementation (Adapter) ---
 
 class GroqAdapter(ILLMService):
@@ -255,6 +263,51 @@ class GroqAdapter(ILLMService):
             print(f"Error generating type hints: {e}")
             return {"parameters": {}, "return_type": None}
 
+    def suggest_constant_name(self, code_context: str, magic_number: str) -> str | None:
+        """
+        Suggests a descriptive constant name for a magic number based on its usage context.
+        """
+        prompt = f"""
+        Analyze the following Python code and suggest a descriptive constant name for the magic number `{magic_number}`.
+
+        Code:
+        ```python
+        {code_context}
+        ```
+
+        Based on how the number `{magic_number}` is used in the code:
+        1. Suggest a clear, descriptive constant name in UPPER_SNAKE_CASE
+        2. The name should explain what the number represents
+        3. Follow Python naming conventions
+
+        Examples of good constant names:
+        - MAX_RETRIES (for 3 in retry logic)
+        - TAX_RATE (for 0.15 in tax calculations)
+        - DEFAULT_TIMEOUT_SECONDS (for 30 in timeout logic)
+        - DAYS_IN_WEEK (for 7)
+
+        Return ONLY the constant name, nothing else. No explanations, no markdown.
+        If the number is too generic to name meaningfully, return "SKIP".
+        """
+        try:
+            response = self.create_completion(prompt).strip()
+            
+            # Clean up response
+            response = response.replace('`', '').replace('"', '').replace("'", '').strip()
+            
+            # Skip if LLM says it's too generic
+            if response.upper() == "SKIP" or not response:
+                return None
+            
+            # Validate it's a valid Python identifier in UPPER_SNAKE_CASE
+            if response.isupper() and response.replace('_', '').isalnum():
+                return response
+            
+            return None
+        except Exception as e:
+            print(f"Error suggesting constant name: {e}")
+            return None
+
 
 class OpenAIAdapter(ILLMService):
     """Adapter for OpenAI Chat Completions API (lazy import)."""
@@ -430,6 +483,10 @@ class OpenAIAdapter(ILLMService):
             print(f"Error generating type hints: {e}")
             return {"parameters": {}, "return_type": None}
 
+    def suggest_constant_name(self, code_context: str, magic_number: str) -> str | None:
+        """Reuse GroqAdapter implementation."""
+        return GroqAdapter.suggest_constant_name(self, code_context, magic_number)
+
 class AnthropicAdapter(ILLMService):
     """Adapter for Anthropic Messages API (Claude) with lazy import."""
     def __init__(self, api_key: str, model: str = "claude-3-5-sonnet-latest"):
@@ -473,6 +530,9 @@ class AnthropicAdapter(ILLMService):
     
     def generate_type_hints(self, code_context: str) -> dict:
         return OpenAIAdapter.generate_type_hints(self, code_context)
+    
+    def suggest_constant_name(self, code_context: str, magic_number: str) -> str | None:
+        return GroqAdapter.suggest_constant_name(self, code_context, magic_number)
 
 
 class GeminiAdapter(ILLMService):
@@ -515,3 +575,6 @@ class GeminiAdapter(ILLMService):
     
     def generate_type_hints(self, code_context: str) -> dict:
         return OpenAIAdapter.generate_type_hints(self, code_context)
+    
+    def suggest_constant_name(self, code_context: str, magic_number: str) -> str | None:
+        return GroqAdapter.suggest_constant_name(self, code_context, magic_number)

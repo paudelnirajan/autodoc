@@ -28,6 +28,11 @@ class IDocstringGenerator(abc.ABC):
         """Generates type hints for a function node."""
         pass
 
+    @abc.abstractmethod
+    def suggest_constant_name(self, code_context: str, magic_number: str) -> str | None:
+        """Suggests a constant name for a magic number."""
+        pass
+
 
 class MockGenerator(IDocstringGenerator):
     """A mock generator for testing."""
@@ -42,6 +47,9 @@ class MockGenerator(IDocstringGenerator):
 
     def generate_type_hints(self, node: Node) -> dict:
         return {"parameters": {}, "return_type": None}
+
+    def suggest_constant_name(self, code_context: str, magic_number: str) -> str | None:
+        return f"MOCK_CONSTANT_FOR_{magic_number.replace('.', '_').replace('-', 'NEG_')}"
 
 
 class LLMGenerator(IDocstringGenerator):
@@ -78,6 +86,9 @@ class LLMGenerator(IDocstringGenerator):
     def generate_type_hints(self, node: Node) -> dict:
         code_snippet = node.text.decode('utf8')
         return self.llm_service.generate_type_hints(code_snippet)
+
+    def suggest_constant_name(self, code_context: str, magic_number: str) -> str | None:
+        return self.llm_service.suggest_constant_name(code_context, magic_number)
 
 
 class GeneratorFactory:
