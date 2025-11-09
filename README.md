@@ -1,7 +1,10 @@
 # Zenco
 
 [![PyPI version](https://badge.fury.io/py/zenco.svg)](https://badge.fury.io/py/zenco)
+[![Tests](https://github.com/paudelnirajan/zenco/workflows/Tests/badge.svg)](https://github.com/paudelnirajan/zenco/actions)
+[![Code Quality](https://github.com/paudelnirajan/zenco/workflows/Code%20Quality/badge.svg)](https://github.com/paudelnirajan/zenco/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
 
 **Zenco** is an AI-powered code analysis and enhancement tool that supports multiple programming languages. It automatically generates docstrings, adds type hints, detects magic numbers, removes dead code, and provides intelligent refactoring suggestions using Large Language Models (LLMs).
 
