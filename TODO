@@ -1,5 +1,11 @@
-* [] CICD
-* [] All programming languages
-* [] Groq Generator not working 
-* [] Working with any LLM APIs
+* [Done] CICD
+* [Done] All programming languages
+* [Done] Groq Generator not working 
+* [Done] Working with any LLM APIs
 * [] Show the credentials being used for the task - make a command for that
+* [Done] Generating Type hints
+* [] Replace AutoDoc name with Zenco
+* [Done] Test everything -- refactor is not doing everything
+* [] one source of truth :: check for comments and are they on-par with code??
+* [] for typehints, if some typehints present, app donot help them complete, it does not do anything, if incmplete, should complete it
+* [] reformatting the code in file (all PL)
