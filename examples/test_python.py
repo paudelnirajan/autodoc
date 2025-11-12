@@ -14,13 +14,15 @@ def calculate_area(radius: float) -> float:
     """
     Calculates the area of a circle given its radius.
 
-        Uses the formula A = πr², where pi is approximated as 3.14159.
+    Args:
+        radius (float): The radius of the circle.
 
-        Args:
-            radius (float): The radius of the circle.
+    Returns:
+        float: The area of the circle.
 
-        Returns:
-            float: The calculated area of the circle.
+    Notes:
+        This function uses the mathematical constant PI to calculate the area.
+        The formula used is A = π * r^2, where A is the area and r is the radius.
     """
     return PI * radius * radius
 
@@ -108,7 +110,7 @@ def another_dead_func() -> int:
     """
     A simple function that returns a constant integer.
 
-        This function initializes a couple of local variables and returns a
+        This function initializes a couple of local variables and returns a 
         static value. It is used for demonstration or testing purposes.
 
         Returns:
@@ -127,13 +129,15 @@ def calculate_tax(amount: float) -> float:
     """
     Calculates the tax for a given amount at a fixed rate.
 
-        This function applies a fixed 15% tax rate to the input amount.
+    This function applies a fixed tax rate to the input amount.
 
-        Args:
-            amount (float): The initial amount of money before tax.
+    Args:
+        amount (float): The initial amount of money before tax.
 
-        Returns:
-            float: The calculated tax amount, which is 15% of the input amount.
+    Returns:
+        float: The calculated tax amount, which is a percentage of the input amount defined by the TAX_RATE variable.
+
+    Note: The tax rate is represented by the variable TAX_RATE, which is assumed to be defined elsewhere in the code with a value of 0.15, representing 15%.
     """
     return amount * TAX_RATE
 
@@ -141,14 +145,17 @@ def calculate_discount(price: float) -> float:
     """
     Calculates the final price after applying a conditional discount.
 
-        A 10% discount is applied if the original price is greater than 100.
-        Otherwise, the original price is returned.
+    A 10% discount is applied if the original price is greater than 100.
+    Otherwise, the original price is returned.
 
-        Args:
-            price (float): The original price of the item.
+    Args:
+        price (float): The original price of the item.
 
-        Returns:
-            float: The price after the discount is applied, if applicable.
+    Returns:
+        float: The price after the discount is applied, if applicable.
+        Raises:
+        Notes: 
+        DISCOUNT_PRICE_THRESHOLD and DISCOUNT_FACTOR are global variables which have been set elsewhere in the code to define the threshold for the discount to be applied and the discount rate, respectively.
     """
     if price > DISCOUNT_PRICE_THRESHOLD:
         return price * DISCOUNT_FACTOR
