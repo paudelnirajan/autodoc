@@ -1,6 +1,8 @@
 import argparse
 import sys
 import os
+import getpass
+from pathlib import Path
 from textwrap import indent
 import traceback
 from autodoc_ai.transformers import CodeTransformer
@@ -73,7 +75,7 @@ def init_config():
     Supports multiple LLM providers interactively.
     """
     print("\n" + "="*70)
-    print("  [SETUP] AutoDoc AI - Initial Configuration Wizard")
+    print("  [SETUP] Zenco AI - Initial Configuration Wizard")
     print("="*70)
     print("\nThis wizard will help you set up your preferred AI provider.")
     print("Your API key will be stored securely in a local .env file.\n")
@@ -113,18 +115,22 @@ def init_config():
     elif provider_name == "gemini":
         print("[INFO] Get your API key at: https://aistudio.google.com/app/apikey")
     
-    api_key = input(f"\n[INPUT] Enter your {provider_name.upper()} API key: ").strip()
+    api_key = getpass.getpass(f"\n[INPUT] Enter your {provider_name.upper()} API key (input hidden): ").strip()
     
     if not api_key:
         print("\n[ERROR] API key is required. Configuration cancelled.")
         return
+    
+    # Show confirmation with masked key (first 4 chars + asterisks)
+    masked_key = api_key[:4] + "*" * (len(api_key) - 4) if len(api_key) > 4 else "*" * len(api_key)
+    print(f"[CONFIRM] API key received: {masked_key}")
     
     model_name = input(f"[INPUT] Enter model name [default: {default_model}]: ").strip() or default_model
     
     keys_to_update = {
         api_key_var: api_key,
         model_var: model_name,
-        "AUTODOC_PROVIDER": provider_name,  # Store the selected provider
+        "ZENCO_PROVIDER": provider_name,  # Store the selected provider
     }
     
     env_path = ".env"
@@ -168,16 +174,16 @@ def init_config():
     
     print(f"\n[NEXT] Next Steps:")
     print(f"  1. Test your setup:")
-    print(f"     autodoc run examples/test.py")
+    print(f"     zenco run examples/test.py")
     print(f"\n  2. Add type hints to your code:")
-    print(f"     autodoc run . --add-type-hints --in-place")
+    print(f"     zenco run . --add-type-hints --in-place")
     print(f"\n  3. Generate docstrings:")
-    print(f"     autodoc run src/ --in-place")
+    print(f"     zenco run src/ --in-place")
     
     print(f"\n[TIPS] Tips:")
     print(f"  • Use --help to see all available options")
-    print(f"  • Change providers anytime: autodoc run --provider <name>")
-    print(f"  • Run 'autodoc init' again to reconfigure")
+    print(f"  • Change providers anytime: zenco run --provider <name>")
+    print(f"  • Run 'zenco init' again to reconfigure")
     print(f"\n{'='*70}\n")
 
 
@@ -300,12 +306,32 @@ def run_autodoc(args):
     """The main entry point for running the analysis."""
     if RICH_AVAILABLE:
         console = Console()
-        console.print(Panel.fit("AutoDoc AI - Code Analysis & Enhancement", 
+        console.print(Panel.fit("Zenco AI - Code Analysis & Enhancement", 
                                border_style="blue", padding=(1, 2)))
     else:
         cprint(f"\n{'='*70}", 'cyan')
-        cprint(f"  AutoDoc AI - Code Analysis & Enhancement", 'blue', 'bold')
+        cprint(f"  Zenco AI - Code Analysis & Enhancement", 'blue', 'bold')
         cprint(f"{'='*70}\n", 'cyan')
+    
+    # Check if this is first-time use and show helpful setup message
+    dotenv_path = Path(os.getcwd()) / '.env'
+    
+    # Load environment variables from .env if it exists
+    if dotenv_path.exists():
+        from dotenv import load_dotenv
+        load_dotenv(dotenv_path)
+    
+    # Check if any API keys are configured
+    has_api_keys = any([
+        os.getenv("GROQ_API_KEY"),
+        os.getenv("OPENAI_API_KEY"), 
+        os.getenv("ANTHROPIC_API_KEY"),
+        os.getenv("GEMINI_API_KEY")
+    ])
+    
+    if not dotenv_path.exists() or not has_api_keys:
+        cprint("First time using Zenco? Run 'zenco init' to set up your AI provider!", 'yellow', 'bold')
+        cprint("   This will configure your API key and enable real AI-powered analysis.\n", 'yellow')
     
     # Determine which features are enabled (opt-in)
     docstrings_enabled = getattr(args, 'docstrings', False) or getattr(args, 'overwrite_existing', False)
@@ -371,7 +397,7 @@ def run_autodoc(args):
     print(f"[OK] Found {len(source_files)} file(s) to process.\n")
     
     # Show provider info
-    provider = getattr(args, 'provider', None) or os.getenv('AUTODOC_PROVIDER', 'groq')
+    provider = getattr(args, 'provider', None) or os.getenv('ZENCO_PROVIDER', 'groq')
     model = getattr(args, 'model', None)
     if args.strategy != 'mock':
         print(f"[AI] Using: {provider.upper()}" + (f" ({model})" if model else ""))
@@ -390,7 +416,7 @@ def run_autodoc(args):
         )
     except ValueError as e:
         print(f"[ERROR] Error: {e}")
-        print(f"[TIP] Tip: Run 'autodoc init' to configure your provider.")
+        print(f"[TIP] Tip: Run 'zenco init' to configure your provider.")
         sys.exit(1)
 
     print(f"{'-'*70}\n")
@@ -425,11 +451,11 @@ def run_autodoc(args):
 def main():
     """Main CLI entry point with subcommand routing."""
     parser = argparse.ArgumentParser(
-        prog="autodoc",
+        prog="zenco",
         description="""
-AutoDoc AI v0.1.4
+Zenco AI v1.2.0
 
-AutoDoc AI automatically generates docstrings, adds type hints, and 
+Zenco AI automatically generates docstrings, adds type hints, and 
 improves code quality using Large Language Models (LLMs).
 
 Supports: Python, JavaScript, Java, Go, C++
@@ -437,18 +463,18 @@ Supports: Python, JavaScript, Java, Go, C++
         epilog="""
 Examples:
   # First-time setup
-  autodoc init
+  zenco init
 
   # Add docstrings to a file (preview)
-  autodoc run myfile.py --docstrings
+  zenco run myfile.py --docstrings
 
   # Add type hints and save changes
-  autodoc run . --add-type-hints --in-place
+  zenco run . --add-type-hints --in-place
 
   # Full quality pass on changed files
-  autodoc run . --diff --add-type-hints --overwrite-existing --in-place
+  zenco run . --diff --add-type-hints --overwrite-existing --in-place
 
-For more help: https://github.com/paudelnirajan/autodoc
+For more help: https://github.com/paudelnirajan/zenco
         """,
         formatter_class=argparse.RawDescriptionHelpFormatter
     )
@@ -487,16 +513,16 @@ By default, runs in preview mode. Use --in-place to save changes.
         epilog="""
 Examples:
   # Preview changes for a single file
-  autodoc run src/main.py
+  zenco run src/main.py
 
   # Add type hints to entire project
-  autodoc run . --add-type-hints --in-place
+  zenco run . --add-type-hints --in-place
 
   # Process only Git-changed files
-  autodoc run . --diff --in-place
+  zenco run . --diff --in-place
 
   # Use a specific provider
-  autodoc run . --provider gemini --in-place
+  zenco run . --provider gemini --in-place
         """
     )
     
@@ -515,9 +541,9 @@ Examples:
     
     parser_run.add_argument(
         "--strategy",
-        choices=["mock", "groq"],
+        choices=["mock", "llm"],
         default=config.get('strategy', 'mock'),
-        help="Use 'groq' for real LLM, 'mock' for testing without API calls"
+        help="Use 'llm' for real LLM (auto-detects provider), 'mock' for testing without API calls"
     )
     
     parser_run.add_argument(
@@ -554,7 +580,7 @@ Examples:
         "--provider",
         choices=["groq", "openai", "anthropic", "gemini"],
         default=None,
-        help="LLM provider to use (default: reads from .env AUTODOC_PROVIDER)"
+        help="LLM provider to use (default: reads from .env ZENCO_PROVIDER)"
     )
     
     parser_run.add_argument(
