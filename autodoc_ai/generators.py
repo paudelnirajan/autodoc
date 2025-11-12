@@ -96,15 +96,40 @@ class GeneratorFactory:
     @staticmethod
     def create_generator(strategy: str, style: str = "google", provider: Optional[str] = None, model: Optional[str] = None) -> IDocstringGenerator:
         # Strategy controls mock vs real; provider controls which LLM vendor.
-        if strategy == "mock":
-            return MockGenerator()
-
+        
         dotenv_path = Path(os.getcwd()) / '.env'
         load_dotenv(dotenv_path=dotenv_path)
 
-        # Read provider from .env if not specified (from autodoc init)
+        # Read provider from .env if not specified (from zenco init)
         if not provider:
-            provider = os.getenv("AUTODOC_PROVIDER", "groq")
+            provider = os.getenv("ZENCO_PROVIDER", "groq")
+        
+        # Auto-detect strategy: if user has API keys configured, use real LLM instead of mock
+        if strategy == "mock":
+            # Check if any API keys are available
+            api_keys_available = {
+                "groq": os.getenv("GROQ_API_KEY"),
+                "openai": os.getenv("OPENAI_API_KEY"),
+                "anthropic": os.getenv("ANTHROPIC_API_KEY"),
+                "gemini": os.getenv("GEMINI_API_KEY")
+            }
+            
+            # If the configured provider has an API key, switch to real LLM
+            if api_keys_available.get(provider.lower()):
+                print(f"[AUTO-DETECT] Found {provider.upper()} API key, switching from mock to real LLM")
+                strategy = "llm"  # Switch to real LLM
+            else:
+                # Check if any provider has API keys available
+                available_providers = [p for p, key in api_keys_available.items() if key]
+                if available_providers:
+                    provider = available_providers[0]  # Use first available
+                    print(f"[AUTO-DETECT] Found {provider.upper()} API key, switching from mock to real LLM")
+                    strategy = "llm"  # Switch to real LLM
+                else:
+                    return MockGenerator()
+        
+        if strategy == "mock":
+            return MockGenerator()
         
         provider = provider.lower()
 
